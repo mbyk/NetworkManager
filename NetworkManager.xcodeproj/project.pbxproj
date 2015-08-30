@@ -15,6 +15,7 @@
 		42B6D3771B91BF48006F4D3C /* NetworkManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42B6D3761B91BF48006F4D3C /* NetworkManagerTests.swift */; };
 		42B6D3891B91C9AE006F4D3C /* NetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B6D3881B91C9AE006F4D3C /* NetworkManager.m */; };
 		42B6D38C1B92FA04006F4D3C /* SessionNetworkManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B6D38B1B92FA04006F4D3C /* SessionNetworkManager.m */; };
+		42B6D38F1B933C1A006F4D3C /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B6D38E1B933C1A006F4D3C /* Reachability.m */; };
 		9EE9AEC0E1E49AEA2D1C26B9 /* libPods-NetworkManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C00885A5425556BF2C2043D5 /* libPods-NetworkManager.a */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,8 @@
 		42B6D3881B91C9AE006F4D3C /* NetworkManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NetworkManager.m; sourceTree = "<group>"; };
 		42B6D38A1B92FA04006F4D3C /* SessionNetworkManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SessionNetworkManager.h; sourceTree = "<group>"; };
 		42B6D38B1B92FA04006F4D3C /* SessionNetworkManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SessionNetworkManager.m; sourceTree = "<group>"; };
+		42B6D38D1B933C1A006F4D3C /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
+		42B6D38E1B933C1A006F4D3C /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		A0305D4899E9ED66DC5B21BB /* Pods-NetworkManager.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NetworkManager.debug.xcconfig"; path = "Pods/Target Support Files/Pods-NetworkManager/Pods-NetworkManager.debug.xcconfig"; sourceTree = "<group>"; };
 		C00885A5425556BF2C2043D5 /* libPods-NetworkManager.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NetworkManager.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -152,6 +155,8 @@
 				42B6D3861B91C9AE006F4D3C /* NetworkManager-Bridging-Header.h */,
 				42B6D38A1B92FA04006F4D3C /* SessionNetworkManager.h */,
 				42B6D38B1B92FA04006F4D3C /* SessionNetworkManager.m */,
+				42B6D38D1B933C1A006F4D3C /* Reachability.h */,
+				42B6D38E1B933C1A006F4D3C /* Reachability.m */,
 			);
 			name = Network;
 			sourceTree = "<group>";
@@ -295,6 +300,7 @@
 				42B6D3891B91C9AE006F4D3C /* NetworkManager.m in Sources */,
 				42B6D3611B91BF48006F4D3C /* AppDelegate.swift in Sources */,
 				42B6D38C1B92FA04006F4D3C /* SessionNetworkManager.m in Sources */,
+				42B6D38F1B933C1A006F4D3C /* Reachability.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

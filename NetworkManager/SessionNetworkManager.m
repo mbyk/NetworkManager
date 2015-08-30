@@ -7,6 +7,7 @@
 //
 
 #import "SessionNetworkManager.h"
+#import "Reachability.h"
 
 
 static NSString* const refreshPath = @"refresh";
@@ -18,6 +19,7 @@ typedef void (^refreshBlock_t)(NSURLSessionDataTask* task, NSError* error);
 @interface SessionNetworkManager () <NSURLSessionDelegate>
 
 @property (nonatomic, strong) NSURLSession* session;
+@property (nonatomic) Reachability *reachability;
 
 - (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount retryInterval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
 
@@ -51,6 +53,7 @@ static SessionNetworkManager* sharedInstance = nil;
     if (self) {
         NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
         self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+        self.reachability  = [Reachability reachabilityForInternetConnection];
     }
     return self;
 }
@@ -84,6 +87,12 @@ static SessionNetworkManager* sharedInstance = nil;
 }
 
 - (void)requestResult:(void (^)(BOOL isSuccess, NSError* error))completionBlock  {
+    
+    NetworkStatus networkStatus = [_reachability currentReachabilityStatus];
+    if (networkStatus == NotReachable) {
+        completionBlock(NO, [[NSError alloc] initWithDomain:@"network connection error" code:1 userInfo:nil]);
+        return;
+    }
     
     [self requestUrlWithRetryCount:10 retryInterval:1 refreshWhenTokenExpired:YES taskCreate:^NSURLSessionDataTask* (retryBlock_t retryBlock, refreshBlock_t refreshBlock) {
         
