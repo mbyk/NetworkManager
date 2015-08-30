@@ -9,14 +9,16 @@
 #import "NetworkManager.h"
 
 
-static const NSString* refreshPath = @"refresh";
-static const NSString* resultPath = @"result";
+static NSString* const refreshPath = @"refresh";
+static NSString* const resultPath = @"result";
 
 typedef void (^retryBlock_t)(NSURLSessionDataTask* task, NSError* error);
 typedef void (^refreshBlock_t)(NSURLSessionDataTask* task, NSError* error);
 
 @interface NetworkManager ()
-- (NSURLSessionDataTask*)requestUrl:(NSInteger)retryCount interval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
+
+- (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount retryInterval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
+
 @end
 
 @implementation NetworkManager
@@ -46,9 +48,9 @@ static NetworkManager* sharedInstance = nil;
 
 - (void)requestRefresh:(void (^)(BOOL isSuccess, NSError* error))completionBlock {
     
-    [self requestUrl:0 interval:0 refreshWhenTokenExpired:NO taskCreate:^NSURLSessionDataTask* (retryBlock_t retryBlock, refreshBlock_t refreshBlock) {
+    [self requestUrlWithRetryCount:0 retryInterval:0 refreshWhenTokenExpired:NO taskCreate:^NSURLSessionDataTask* (retryBlock_t retryBlock, refreshBlock_t refreshBlock) {
         
-        return [self GET:@"refresh" parameters:nil success:^(NSURLSessionDataTask* refreshTask, id refreshResponse) {
+        return [self POST:refreshPath parameters:nil success:^(NSURLSessionDataTask* refreshTask, id refreshResponse) {
             
             if (refreshResponse[@"error_cd"]) {
                 
@@ -71,9 +73,9 @@ static NetworkManager* sharedInstance = nil;
 
 - (void)requestResult:(void (^)(BOOL isSuccess, NSError* error))completionBlock  {
     
-    [self requestUrl:10 interval:2 refreshWhenTokenExpired:YES taskCreate:^NSURLSessionDataTask* (retryBlock_t retryBlock, refreshBlock_t refreshBlock) {
+    [self requestUrlWithRetryCount:10 retryInterval:1 refreshWhenTokenExpired:YES taskCreate:^NSURLSessionDataTask* (retryBlock_t retryBlock, refreshBlock_t refreshBlock) {
         
-        return [self GET:@"result" parameters:nil success:^(NSURLSessionDataTask* resultTask, id resultResponse) {
+        return [self POST:resultPath parameters:nil success:^(NSURLSessionDataTask* resultTask, id resultResponse) {
             
             NSLog(@"result ok -> %@", resultResponse);
             
@@ -95,7 +97,7 @@ static NetworkManager* sharedInstance = nil;
 }
 
 
-- (NSURLSessionDataTask*)requestUrl:(NSInteger)retryCount interval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure {
+- (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount retryInterval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure {
     
     id createCopy = [taskCreate copy];
     
@@ -104,7 +106,7 @@ static NetworkManager* sharedInstance = nil;
         if (retryCount > 0) {
             
             void (^addRetryOperation)() = ^{
-                [self requestUrl:retryCount - 1 interval:retryInteval refreshWhenTokenExpired:refreshWhenTokenExpired taskCreate:createCopy failure:failure];
+                [self requestUrlWithRetryCount:retryCount - 1 retryInterval:retryInteval refreshWhenTokenExpired:refreshWhenTokenExpired taskCreate:createCopy failure:failure];
             };
             
             if (retryInteval > 0) {
@@ -114,9 +116,12 @@ static NetworkManager* sharedInstance = nil;
                     addRetryOperation();
                 });
             } else {
+                NSLog(@"retry remaining... %ld", retryCount);
                 addRetryOperation();
             }
         } else {
+            
+            NSLog(@"retry count = 0");
             failure(task, originError);
         }
     };
@@ -128,7 +133,7 @@ static NetworkManager* sharedInstance = nil;
             if (isSuccess && refreshWhenTokenExpired) {
                 
                 void (^addRetryOperation)() = ^{
-                    [self requestUrl:retryCount interval:retryInteval refreshWhenTokenExpired:NO taskCreate:createCopy failure:failure];
+                    [self requestUrlWithRetryCount:retryCount retryInterval:retryInteval refreshWhenTokenExpired:NO taskCreate:createCopy failure:failure];
                 };
                 
                 NSLog(@"refresh ok: retry remaining... %ld", retryCount);
