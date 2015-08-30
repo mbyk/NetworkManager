@@ -21,7 +21,10 @@ typedef void (^refreshBlock_t)(NSURLSessionDataTask* task, NSError* error);
 @property (nonatomic, strong) NSURLSession* session;
 @property (nonatomic) Reachability *reachability;
 
-- (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount retryInterval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
+- (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount
+                                    retryInterval:(NSInteger)retryInteval
+                          refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired
+                                       taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
 
 @end
 
