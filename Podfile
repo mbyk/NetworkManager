@@ -4,6 +4,7 @@
 target 'NetworkManager' do
 
 pod 'AFNetworking', '2.6.0'
+pod 'LUKeychainAccess', '1.2.4'
 
 end
 

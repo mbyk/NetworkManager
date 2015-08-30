@@ -28,6 +28,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             
         }
         
+        // キーチェーン保存
+        LUKeychainAccess.standardKeychainAccess().setObject(nil, forKey: "key")
+        if let key = LUKeychainAccess.standardKeychainAccess().objectForKey("key") as? String {
+            NSLog("key: %@", key)
+        } else {
+            NSLog("key: no")
+        }
+        
         return true
     }
 
