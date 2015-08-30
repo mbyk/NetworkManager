@@ -5,3 +5,4 @@
 #import <AFNetworking/AFNetworking.h>
 #import <LUKeychainAccess/LUKeychainAccess.h>
 #import "NetworkManager.h"
+#import "SessionNetworkManager.h"

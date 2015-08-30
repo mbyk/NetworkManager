@@ -16,14 +16,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
-        var manager = NetworkManager.shared()
+//        var manager = NetworkManager.shared()
+        var manager = SessionNetworkManager.shared()
 //        manager.requestResult();
         manager.requestResult { (isSuccess, error) in
             
             if isSuccess {
                 NSLog("OK: requestResult")
             } else {
-                NSLog("NS: %@", error)
+                NSLog("NG: %@", error)
             }
             
         }
