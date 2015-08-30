@@ -8,7 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface SessionNetworkManager : NSObject
+@interface SessionNetworkManager : NSObject 
+
+@property (nonatomic, assign) BOOL allowInvalidCertification;
+@property (nonatomic, strong) NSString* baseURL;
 
 + (SessionNetworkManager*)shared;
 - (void)requestRefresh:(void (^)(BOOL isSuccess, NSError* error))completionBlock;

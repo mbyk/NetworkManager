@@ -10,18 +10,20 @@
 
 
 static NSString* const refreshPath = @"refresh";
-static NSString* const resultPath = @"result";
+static NSString* const resultPath  = @"result";
 
 typedef void (^retryBlock_t)(NSURLSessionDataTask* task, NSError* error);
 typedef void (^refreshBlock_t)(NSURLSessionDataTask* task, NSError* error);
 
-@interface SessionNetworkManager ()
+@interface SessionNetworkManager () <NSURLSessionDelegate>
+
+@property (nonatomic, strong) NSURLSession* session;
 
 - (NSURLSessionDataTask*)requestUrlWithRetryCount:(NSInteger)retryCount retryInterval:(NSInteger)retryInteval refreshWhenTokenExpired:(BOOL)refreshWhenTokenExpired taskCreate:(NSURLSessionDataTask *(^)(retryBlock_t, refreshBlock_t))taskCreate failure:(void(^)(NSURLSessionDataTask *, NSError *))failure;
 
 @end
 
-@implementation SessionNetworkManager
+@implementation SessionNetworkManager 
 
 static SessionNetworkManager* sharedInstance = nil;
 
@@ -31,6 +33,8 @@ static SessionNetworkManager* sharedInstance = nil;
     
     dispatch_once(&onceToken, ^{
         sharedInstance = [[SessionNetworkManager alloc] init];
+        sharedInstance.allowInvalidCertification = YES;
+        sharedInstance.baseURL = @"http://localhost:4567";
     });
     
     return sharedInstance;
@@ -42,6 +46,12 @@ static SessionNetworkManager* sharedInstance = nil;
 //        self.requestSerializer = [AFHTTPRequestSerializer serializer];
 //        self.responseSerializer = [AFJSONResponseSerializer serializer];
 //    }
+    
+    self = [super init];
+    if (self) {
+        NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
+        self.session = [NSURLSession sessionWithConfiguration:configuration delegate:self delegateQueue:nil];
+    }
     return self;
 }
 
@@ -110,17 +120,18 @@ static SessionNetworkManager* sharedInstance = nil;
                        failure:(void (^)(NSURLSessionDataTask *task, NSError *error))failure
 {
     
-    NSURL* url = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@",@"http://localhost:4567", URLString]];
+    NSURL* url = [NSURL URLWithString:URLString relativeToURL:[NSURL URLWithString:self.baseURL]];
+    
     NSLog(@"url: %@", [url absoluteString]);
     NSMutableURLRequest* request = [[NSMutableURLRequest alloc] initWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData timeoutInterval:30.0];
+    
     request.HTTPMethod = @"POST";
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration defaultSessionConfiguration];
-    NSURLSession* session = [NSURLSession sessionWithConfiguration:configuration delegate:nil delegateQueue:nil];
-    
-    NSURLSessionDataTask *dataTask = [session dataTaskWithRequest:request
+
+    NSURLSessionDataTask *dataTask = [self.session dataTaskWithRequest:request
                                                 completionHandler:^(NSData * data, NSURLResponse * __unused response, NSError *error) {
                                                     
+                                                    NSLog(@"error");
                                                     if (error) {
                                                         if (failure) {
                                                             failure(dataTask, error);
@@ -197,6 +208,36 @@ static SessionNetworkManager* sharedInstance = nil;
     NSURLSessionDataTask* task = taskCreate(retryBlock, refreshBlock);
     
     return task;
+}
+
+- (void) URLSession:(NSURLSession *)session didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
+    
+    NSString *authMethod = challenge.protectionSpace.authenticationMethod;
+    if ([authMethod isEqualToString: NSURLAuthenticationMethodServerTrust]) {
+        SecTrustRef secTrustRef = challenge.protectionSpace.serverTrust;
+        if (secTrustRef != NULL) {
+            SecTrustResultType result;
+            OSErr er = SecTrustEvaluate( secTrustRef, &result );
+            if ( er != noErr) {
+                completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
+            }
+            
+            // 自己証明書の場合
+            if ( result == kSecTrustResultRecoverableTrustFailure ) {
+                NSLog( @"---SecTrustResultRecoverableTrustFailure" );
+                
+                // 自己証明書を許可しない場合は、通信をキャンセルする。
+                if (!self.allowInvalidCertification) {
+           
+                    [session invalidateAndCancel];
+                    return;
+                }
+            }
+        }
+        
+        NSURLCredential *credential = [NSURLCredential credentialForTrust: secTrustRef];
+        completionHandler(NSURLSessionAuthChallengeUseCredential, credential);
+    }
 }
 
 @end
