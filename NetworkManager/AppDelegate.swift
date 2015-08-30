@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         manager.requestResult { (isSuccess, error) in
             
             if isSuccess {
-                NSLog("OK")
+                NSLog("OK: requestResult")
             } else {
                 NSLog("NS: %@", error)
             }

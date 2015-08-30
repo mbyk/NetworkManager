@@ -86,6 +86,8 @@ static NetworkManager* sharedInstance = nil;
                 return;
             }
             
+            completionBlock(YES, nil);
+            
         } failure:retryBlock];
         
     } failure:^(NSURLSessionDataTask* task, NSError* error){
@@ -105,7 +107,7 @@ static NetworkManager* sharedInstance = nil;
         
         if (retryCount > 0) {
             
-            void (^addRetryOperation)() = ^{
+            void (^runRetryAction)() = ^{
                 [self requestUrlWithRetryCount:retryCount - 1 retryInterval:retryInteval refreshWhenTokenExpired:refreshWhenTokenExpired taskCreate:createCopy failure:failure];
             };
             
@@ -113,11 +115,11 @@ static NetworkManager* sharedInstance = nil;
                 NSLog(@"retry remaining... %ld", retryCount);
                 dispatch_time_t delay = dispatch_time(0, (int64_t)(retryInteval * NSEC_PER_SEC));
                 dispatch_after(delay, dispatch_get_main_queue(), ^(void){
-                    addRetryOperation();
+                    runRetryAction();
                 });
             } else {
                 NSLog(@"retry remaining... %ld", retryCount);
-                addRetryOperation();
+                runRetryAction();
             }
         } else {
             
@@ -128,21 +130,22 @@ static NetworkManager* sharedInstance = nil;
     
     refreshBlock_t refreshBlock = ^(NSURLSessionDataTask *task, NSError *originError) {
         
+        if (!refreshWhenTokenExpired) {
+            NSLog(@"refresh error: %@", originError);
+            failure(task, originError);
+            return;
+        }
+        
         [self requestRefresh:^(BOOL isSuccess, NSError* refreshError) {
             
-            if (isSuccess && refreshWhenTokenExpired) {
+            if (isSuccess) {
                 
-                void (^addRetryOperation)() = ^{
+                void (^runRetryAction)() = ^{
                     [self requestUrlWithRetryCount:retryCount retryInterval:retryInteval refreshWhenTokenExpired:NO taskCreate:createCopy failure:failure];
                 };
                 
                 NSLog(@"refresh ok: retry remaining... %ld", retryCount);
-                addRetryOperation();
-                
-            } else if (isSuccess && !refreshWhenTokenExpired) {
-                
-                NSLog(@"refresh error: %@", originError);
-                failure(task, originError);
+                runRetryAction();
                 
             } else {
                 failure(task, refreshError);
