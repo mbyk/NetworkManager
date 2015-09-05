@@ -10,10 +10,7 @@
 #import "AFHTTPSessionManager.h"
 
 @interface NetworkManager : AFHTTPSessionManager
-
 + (NetworkManager*)shared;
 - (void)requestRefresh:(void (^)(BOOL isSuccess, NSError* error))completionBlock;
 - (void)requestResult:(void (^)(BOOL isSuccess, NSError* error))completionBlock;
-
-
 @end
