@@ -58,9 +58,7 @@ static NetworkManager* sharedInstance = nil;
         return [self POST:refreshPath parameters:nil success:^(NSURLSessionDataTask* refreshTask, id refreshResponse) {
             
             if (refreshResponse[@"error_cd"]) {
-                
                 completionBlock(NO, [[NSError alloc] initWithDomain:@"system_error" code:1 userInfo:nil]);
-                
                 return;
             }
             
@@ -69,11 +67,9 @@ static NetworkManager* sharedInstance = nil;
         } failure:retryBlock];
         
     } failure:^(NSURLSessionDataTask* task, NSError* error){
-        
         completionBlock(NO, error);
         
     }];
-    
 }
 
 - (void)requestResult:(void (^)(BOOL isSuccess, NSError* error))completionBlock  {
@@ -95,11 +91,9 @@ static NetworkManager* sharedInstance = nil;
             }
             
             completionBlock(YES, nil);
-            
         } failure:retryBlock];
         
     } failure:^(NSURLSessionDataTask* task, NSError* error){
-    
         NSLog(@"error: %@", error);
     }];
 }
@@ -111,7 +105,6 @@ static NetworkManager* sharedInstance = nil;
     retryBlock_t retryBlock = ^(NSURLSessionDataTask *task, NSError *originError) {
         
         if (retryCount > 0) {
-            
             void (^runRetryAction)() = ^{
                 [self requestUrlWithRetryCount:retryCount - 1 retryInterval:retryInteval refreshWhenTokenExpired:refreshWhenTokenExpired taskCreate:createCopy failure:failure];
             };
@@ -133,7 +126,6 @@ static NetworkManager* sharedInstance = nil;
     };
     
     refreshBlock_t refreshBlock = ^(NSURLSessionDataTask *task, NSError *originError) {
-        
         if (!refreshWhenTokenExpired) {
             NSLog(@"refresh error: %@", originError);
             failure(task, originError);
