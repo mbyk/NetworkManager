@@ -10,7 +10,7 @@
 #import "Reachability.h"
 
 static NSString* const refreshPath = @"refresh";
-static NSString* const resultPath = @"result";
+static NSString* const resultPath  = @"result";
 
 typedef void (^retryBlock_t)(NSURLSessionDataTask* task, NSError* error);
 typedef void (^refreshBlock_t)(NSURLSessionDataTask* task, NSError* error);
@@ -44,9 +44,9 @@ static NetworkManager* sharedInstance = nil;
 - (instancetype)init {
     self = [super initWithBaseURL:[NSURL URLWithString:@"http://localhost:4567"]];
     if (self) {
-        self.requestSerializer = [AFHTTPRequestSerializer serializer];
+        self.requestSerializer  = [AFHTTPRequestSerializer serializer];
         self.responseSerializer = [AFJSONResponseSerializer serializer];
-        self.reachability  = [Reachability reachabilityForInternetConnection];
+        self.reachability       = [Reachability reachabilityForInternetConnection];
     }
     return self;
 }
